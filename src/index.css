@@ -1,0 +1,406 @@
+/* ============================================================
+   Smart Recipe Organizer — global styles
+   ------------------------------------------------------------
+   Color tokens (used everywhere — change here, change everywhere):
+     --bg          page background (warm cream)
+     --surface     cards, header, recipe panel
+     --soft        secondary surface for filled CTAs
+     --ink         primary text + dark buttons
+     --slate       body text
+     --muted       captions, hints
+     --accent      terracotta — cooking-themed primary color
+     --accent-dk   darker terracotta for hover
+     --border      hairline borders
+============================================================ */
+
+:root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --soft: #F0EFEB;
+    --ink: #141413;
+    --slate: #475467;
+    --muted: #6B7280;
+    --accent: #D17557;
+    --accent-dk: #B85F42;
+    --border: #E5E7EB;
+    --radius: 10px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    /* Soft warm radial glow at top — adds character without being noisy. */
+    background-image:
+        radial-gradient(ellipse 800px 400px at 50% -100px, rgba(209, 117, 87, 0.08), transparent 70%),
+        radial-gradient(ellipse 600px 300px at 90% 200px, rgba(209, 117, 87, 0.04), transparent 60%);
+    line-height: 1.5;
+}
+
+/* ============================================================
+   Header + nav
+============================================================ */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    height: 72px;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+header .brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+header h1 {
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.main-nav {
+    display: flex;
+    gap: 4px;
+}
+
+.main-nav a {
+    text-decoration: none;
+    color: var(--slate);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+
+.main-nav a:hover {
+    background: var(--soft);
+    color: var(--ink);
+}
+
+.main-nav a.active {
+    background: var(--ink);
+    color: var(--bg);
+}
+
+/* ============================================================
+   Page container
+============================================================ */
+
+main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+}
+
+/* ============================================================
+   Hero — generator page intro
+============================================================ */
+
+.hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.hero h2 {
+    font-size: 2.25rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+    color: var(--ink);
+}
+
+.hero h2 .accent {
+    color: var(--accent);
+}
+
+.hero p {
+    font-size: 1.05rem;
+    color: var(--slate);
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   Add-ingredient form
+============================================================ */
+
+.add-ingredient-form {
+    display: flex;
+    gap: 10px;
+    max-width: 560px;
+    margin: 0 auto 32px;
+}
+
+.add-ingredient-form input {
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.add-ingredient-form input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(209, 117, 87, 0.18);
+}
+
+.add-ingredient-form input::placeholder {
+    color: var(--muted);
+}
+
+.add-ingredient-form button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--ink);
+    color: var(--bg);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.05s, background 0.15s;
+}
+
+.add-ingredient-form button:hover {
+    background: #2A2A28;
+}
+
+.add-ingredient-form button:active {
+    transform: translateY(1px);
+}
+
+.add-ingredient-form button::before {
+    content: "+";
+    margin-right: 6px;
+    font-weight: 400;
+}
+
+/* ============================================================
+   Empty state — no ingredients yet
+============================================================ */
+
+.empty-state {
+    text-align: center;
+    padding: 40px 24px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--muted);
+    margin-bottom: 32px;
+}
+
+.empty-state .icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    color: var(--ink);
+    font-size: 1.05rem;
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ============================================================
+   Ingredients chips
+============================================================ */
+
+.ingredients-section {
+    margin-bottom: 32px;
+}
+
+.ingredients-section h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 14px;
+}
+
+.ingredients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ingredients-list li {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--slate);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s;
+}
+
+.ingredients-list li:hover {
+    border-color: var(--accent);
+}
+
+/* ============================================================
+   "Ready for a recipe?" call-to-action card
+============================================================ */
+
+.get-recipe-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    background: var(--soft);
+    box-shadow: var(--shadow-sm);
+    margin-top: 20px;
+}
+
+.get-recipe-container h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 4px;
+}
+
+.get-recipe-container p {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin: 0;
+}
+
+.get-recipe-container button {
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: white;
+    padding: 12px 22px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s, transform 0.05s;
+    white-space: nowrap;
+}
+
+.get-recipe-container button:hover {
+    background: var(--accent-dk);
+}
+
+.get-recipe-container button:active {
+    transform: translateY(1px);
+}
+
+/* ============================================================
+   Suggested recipe panel
+============================================================ */
+
+.suggested-recipe-container {
+    margin-top: 40px;
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    color: var(--slate);
+    line-height: 1.7;
+}
+
+.suggested-recipe-container h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.suggested-recipe-container h3 {
+    color: var(--ink);
+    font-size: 1.1rem;
+    margin: 24px 0 12px;
+}
+
+.suggested-recipe-container ul,
+.suggested-recipe-container ol {
+    padding-left: 22px;
+}
+
+.suggested-recipe-container li {
+    margin-bottom: 6px;
+}
+
+.suggested-recipe-container em {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* ============================================================
+   Library page placeholder (Day 3 will replace)
+============================================================ */
+
+main h2 {
+    font-size: 1.75rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+/* ============================================================
+   Responsive
+============================================================ */
+
+@media (max-width: 640px) {
+    header { padding: 0 16px; }
+    header h1 { display: none; }                 /* keep just logo on phones */
+    main { padding: 28px 16px 48px; }
+    .hero h2 { font-size: 1.7rem; }
+    .add-ingredient-form { flex-direction: column; }
+    .add-ingredient-form button { width: 100%; }
+    .get-recipe-container { flex-direction: column; align-items: stretch; text-align: center; }
+    .get-recipe-container button { width: 100%; }
+}
