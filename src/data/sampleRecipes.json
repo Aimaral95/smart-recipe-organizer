@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sample-tomato-pasta",
+    "title": "Quick Tomato Garlic Pasta",
+    "ingredients": [
+      "8 oz spaghetti",
+      "3 cloves garlic, minced",
+      "1 can (14 oz) crushed tomatoes",
+      "2 tbsp olive oil",
+      "1 tsp dried basil",
+      "Salt and pepper to taste",
+      "Grated parmesan, to serve"
+    ],
+    "instructions": [
+      "Bring a large pot of salted water to a boil and cook the spaghetti until al dente.",
+      "While pasta cooks, heat olive oil in a skillet over medium heat. Add garlic and cook 30 seconds until fragrant.",
+      "Pour in the crushed tomatoes and basil. Simmer 8 minutes, season with salt and pepper.",
+      "Drain the pasta and toss with the sauce.",
+      "Serve topped with parmesan."
+    ],
+    "markdown": "## Quick Tomato Garlic Pasta\n\n**Ingredients:**\n- 8 oz spaghetti\n- 3 cloves garlic, minced\n- 1 can (14 oz) crushed tomatoes\n- 2 tbsp olive oil\n- 1 tsp dried basil\n- Salt and pepper to taste\n- Grated parmesan, to serve\n\n**Instructions:**\n1. Bring a large pot of salted water to a boil and cook the spaghetti until al dente.\n2. While pasta cooks, heat olive oil in a skillet over medium heat. Add garlic and cook 30 seconds until fragrant.\n3. Pour in the crushed tomatoes and basil. Simmer 8 minutes, season with salt and pepper.\n4. Drain the pasta and toss with the sauce.\n5. Serve topped with parmesan.\n\n*Estimated cook time: 20 minutes*",
+    "tags": ["italian", "weeknight", "pasta"],
+    "dietary": ["vegetarian"],
+    "cookTimeMinutes": 20,
+    "image": "",
+    "favorite": false,
+    "createdAt": "2026-04-20T18:00:00.000Z"
+  },
+  {
+    "id": "sample-lemon-chicken",
+    "title": "Lemon Garlic Chicken",
+    "ingredients": [
+      "2 boneless chicken breasts",
+      "1 lemon (juice and zest)",
+      "4 cloves garlic, minced",
+      "2 tbsp olive oil",
+      "1 tsp dried oregano",
+      "Salt and black pepper"
+    ],
+    "instructions": [
+      "Whisk lemon juice, zest, garlic, olive oil, oregano, salt and pepper in a bowl.",
+      "Add chicken and turn to coat. Marinate 15 minutes (longer is better).",
+      "Heat a skillet over medium-high. Cook chicken 5-6 min per side until 165°F internal.",
+      "Rest 5 minutes, slice, and serve with the pan juices spooned over."
+    ],
+    "markdown": "## Lemon Garlic Chicken\n\n**Ingredients:**\n- 2 boneless chicken breasts\n- 1 lemon (juice and zest)\n- 4 cloves garlic, minced\n- 2 tbsp olive oil\n- 1 tsp dried oregano\n- Salt and black pepper\n\n**Instructions:**\n1. Whisk lemon juice, zest, garlic, olive oil, oregano, salt and pepper in a bowl.\n2. Add chicken and turn to coat. Marinate 15 minutes (longer is better).\n3. Heat a skillet over medium-high. Cook chicken 5-6 min per side until 165°F internal.\n4. Rest 5 minutes, slice, and serve with the pan juices spooned over.\n\n*Estimated cook time: 30 minutes*",
+    "tags": ["chicken", "weeknight", "high-protein"],
+    "dietary": ["gluten-free", "dairy-free"],
+    "cookTimeMinutes": 30,
+    "image": "",
+    "favorite": true,
+    "createdAt": "2026-04-21T18:00:00.000Z"
+  },
+  {
+    "id": "sample-black-bean-tacos",
+    "title": "Black Bean Tacos",
+    "ingredients": [
+      "1 can (15 oz) black beans, drained and rinsed",
+      "1 tsp ground cumin",
+      "1 tsp smoked paprika",
+      "1/2 tsp chili powder",
+      "1 small onion, diced",
+      "Juice of 1 lime",
+      "8 small corn tortillas",
+      "Toppings: avocado, salsa, cilantro"
+    ],
+    "instructions": [
+      "Sauté onion in a skillet with a splash of oil until soft, 3 minutes.",
+      "Add black beans, cumin, paprika, chili powder, and 1/4 cup water. Mash lightly.",
+      "Cook 5 minutes until thick. Stir in lime juice.",
+      "Warm tortillas in a dry pan.",
+      "Fill each with bean mixture and your favorite toppings."
+    ],
+    "markdown": "## Black Bean Tacos\n\n**Ingredients:**\n- 1 can (15 oz) black beans, drained and rinsed\n- 1 tsp ground cumin\n- 1 tsp smoked paprika\n- 1/2 tsp chili powder\n- 1 small onion, diced\n- Juice of 1 lime\n- 8 small corn tortillas\n- Toppings: avocado, salsa, cilantro\n\n**Instructions:**\n1. Sauté onion in a skillet with a splash of oil until soft, 3 minutes.\n2. Add black beans, cumin, paprika, chili powder, and 1/4 cup water. Mash lightly.\n3. Cook 5 minutes until thick. Stir in lime juice.\n4. Warm tortillas in a dry pan.\n5. Fill each with bean mixture and your favorite toppings.\n\n*Estimated cook time: 25 minutes*",
+    "tags": ["mexican", "weeknight", "tacos"],
+    "dietary": ["vegan", "vegetarian", "gluten-free"],
+    "cookTimeMinutes": 25,
+    "image": "",
+    "favorite": false,
+    "createdAt": "2026-04-22T18:00:00.000Z"
+  }
+]

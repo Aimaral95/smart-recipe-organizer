@@ -1,31 +1,91 @@
 // GeneratorPage
-// The "/" route. Lets the user collect ingredients, then asks the AI for a recipe.
+// The "/" route. Lets the user collect ingredients, generate a recipe with AI,
+// then save it to their library.
 //
 // Local state (intentional — not in RecipesContext):
-//   ingredients: string[]  — chips shown before the user generates
-//   recipe:      string    — markdown returned from the AI
+//   ingredients: string[]   chips shown before the user generates
+//   recipe:      string     markdown returned from the AI (last generation)
+//   isLoading:   boolean    true while an AI call is in flight
+//   error:       string     human-readable error message ("" = no error)
+//   savedId:     string|""  id of the just-saved recipe (so we can offer "View")
 //
-// On Day 2 we'll add: delete-ingredient, validation, loading + error states.
-// On Day 3 we'll add: a "Save recipe" button that dispatches to RecipesContext.
+// On save: parseRecipe → build full recipe object → dispatch ADD → navigate to detail.
 
-import React from "react"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { v4 as uuid } from "uuid"
 import IngredientsList from "../components/IngredientsList"
 import ClaudeRecipe from "../components/ClaudeRecipe"
+import LoadingSpinner from "../components/LoadingSpinner"
+import ErrorBanner from "../components/ErrorBanner"
 import { getRecipeFromChefClaude } from "../ai"
+import { useRecipes } from "../context/RecipesContext"
+import { parseRecipe } from "../utils/parseRecipe"
 
 export default function GeneratorPage() {
-    const [ingredients, setIngredients] = React.useState([])
-    const [recipe, setRecipe] = React.useState("")
+    const [ingredients, setIngredients] = useState([])
+    const [recipe, setRecipe] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [savedId, setSavedId] = useState("")
 
-    async function getRecipe() {
-        const recipeMarkdown = await getRecipeFromChefClaude(ingredients)
-        setRecipe(recipeMarkdown)
-    }
+    const { dispatch } = useRecipes()
+    const navigate = useNavigate()
 
     function addIngredient(formData) {
-        const newIngredient = formData.get("ingredient")
-        // Day 2 will add: trim, dedupe, reject empty.
-        setIngredients(prev => [...prev, newIngredient])
+        const raw = formData.get("ingredient")?.trim()
+        if (!raw) return
+        const isDuplicate = ingredients.some(
+            existing => existing.toLowerCase() === raw.toLowerCase()
+        )
+        if (isDuplicate) return
+        setIngredients(prev => [...prev, raw])
+    }
+
+    function removeIngredient(ingredient) {
+        setIngredients(prev => prev.filter(item => item !== ingredient))
+    }
+
+    async function getRecipe() {
+        setError("")
+        setSavedId("")  // generating a new one wipes the "saved" indicator
+        setIsLoading(true)
+        try {
+            const recipeMarkdown = await getRecipeFromChefClaude(ingredients)
+            setRecipe(recipeMarkdown)
+        } catch (err) {
+            console.error(err)
+            setError(
+                err?.message
+                    ? `Couldn't generate a recipe: ${err.message}`
+                    : "Couldn't generate a recipe. Check your connection and try again."
+            )
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    function saveRecipe() {
+        // Pull structured data out of the AI markdown. parseRecipe is forgiving —
+        // missing fields fall through as null/[] and the markdown is still preserved.
+        const parsed = parseRecipe(recipe)
+        const newRecipe = {
+            id: uuid(),
+            title: parsed.title || "Untitled recipe",
+            ingredients: parsed.ingredients,
+            instructions: parsed.instructions,
+            markdown: recipe,
+            tags: [],
+            dietary: [],
+            cookTimeMinutes: parsed.cookTimeMinutes,
+            image: "",
+            favorite: false,
+            createdAt: new Date().toISOString(),
+        }
+        dispatch({ type: "ADD", payload: newRecipe })
+        setSavedId(newRecipe.id)
+        // Hand off to the detail page so the user sees what they saved.
+        navigate(`/recipe/${newRecipe.id}`)
     }
 
     return (
@@ -46,6 +106,8 @@ export default function GeneratorPage() {
                     placeholder="e.g. chicken, oregano, heavy cream..."
                     aria-label="Add ingredient"
                     name="ingredient"
+                    required
+                    maxLength={60}
                 />
                 <button>Add ingredient</button>
             </form>
@@ -59,11 +121,34 @@ export default function GeneratorPage() {
             ) : (
                 <IngredientsList
                     ingredients={ingredients}
+                    onRemove={removeIngredient}
                     getRecipe={getRecipe}
+                    disabled={isLoading}
                 />
             )}
 
-            {recipe && <ClaudeRecipe recipe={recipe} />}
+            <ErrorBanner message={error} onDismiss={() => setError("")} />
+
+            {isLoading && <LoadingSpinner label="Asking Chef Claude..." />}
+
+            {recipe && !isLoading && (
+                <>
+                    <ClaudeRecipe recipe={recipe} />
+                    <div className="save-recipe-bar">
+                        {savedId ? (
+                            <span className="saved-note">Saved to your library ✓</span>
+                        ) : (
+                            <button
+                                type="button"
+                                className="primary-btn"
+                                onClick={saveRecipe}
+                            >
+                                Save to library
+                            </button>
+                        )}
+                    </div>
+                </>
+            )}
         </main>
     )
 }

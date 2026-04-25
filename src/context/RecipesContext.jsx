@@ -1,29 +1,40 @@
 // RecipesContext
-// Holds the saved-recipe library so any page (Generator, Library, Detail)
-// can read it without prop-drilling.
+// The saved-recipe library, made available to every page in the app.
 //
-// Day 1 (today): skeleton only — empty array + no-op dispatch. App still renders.
-// Day 3: replace useState with useReducer(recipesReducer) and add useLocalStorage
-//        so saved recipes persist across refreshes.
+// Three jobs:
+//   1. Hold state via useReducer(recipesReducer).
+//   2. Initialize from localStorage (or seed with sampleRecipes for first visit).
+//   3. Persist on every change via useEffect.
 //
-// Usage in any component:
-//     const { recipes, dispatch } = useRecipes()
+// Bumping STORAGE_KEY to a new "v" string is the migration trick: if we ever
+// change the recipe shape in a breaking way, change "v1" to "v2" and existing
+// users get the seeded data again. Cheap and avoids weird half-migrated state.
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useReducer, useEffect } from "react"
+import { recipesReducer } from "../reducers/recipesReducer"
+import { loadJSON, saveJSON } from "../utils/storage"
+import sampleRecipes from "../data/sampleRecipes.json"
+
+const STORAGE_KEY = "smart-recipe-organizer.recipes.v1"
 
 const RecipesContext = createContext(null)
 
 export function RecipesProvider({ children }) {
-    // Placeholder state. Day 3 swaps this for useReducer + useLocalStorage.
-    const [recipes, setRecipes] = useState([])
+    // Lazy initializer — runs only on first render. Reads from localStorage,
+    // falling back to the seeded sample recipes the first time the user opens
+    // the app. Without lazy init, this would re-run on every render and waste work.
+    const [recipes, dispatch] = useReducer(
+        recipesReducer,
+        undefined,
+        () => loadJSON(STORAGE_KEY, sampleRecipes)
+    )
 
-    // Placeholder dispatch — same shape we'll use with the reducer on Day 3,
-    // so consumers don't need to change when we upgrade.
-    function dispatch(action) {
-        console.log("RecipesContext dispatch (stub):", action)
-    }
+    // Persist on every change. Effect runs after React commits state to the DOM.
+    useEffect(() => {
+        saveJSON(STORAGE_KEY, recipes)
+    }, [recipes])
 
-    const value = { recipes, dispatch, setRecipes }
+    const value = { recipes, dispatch }
     return (
         <RecipesContext.Provider value={value}>
             {children}
@@ -32,7 +43,7 @@ export function RecipesProvider({ children }) {
 }
 
 // Custom hook so consumers don't import useContext + the context object themselves.
-// Throwing when used outside the provider catches a common bug early.
+// Throws if used outside the provider — catches a common bug early.
 export function useRecipes() {
     const ctx = useContext(RecipesContext)
     if (ctx === null) {

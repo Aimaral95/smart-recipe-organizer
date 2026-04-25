@@ -1,22 +1,47 @@
 // LibraryPage
-// Day 3: this page will show a grid of saved recipes pulled from RecipesContext.
-// Day 4: filter bar (diet, tag, max cook time, title search) lives here.
-// Day 4-5: grid/table view toggle.
-// For Day 1 it's just a stub so the route resolves.
+// The "/library" route. Reads the saved-recipe library from RecipesContext
+// and renders a grid of RecipeCards.
+//
+// Day 4 will add: FilterBar (diet, tag, max time, search), favorites-only
+// toggle, grid/table view switcher.
+
+import RecipeCard from "../components/RecipeCard"
+import { useRecipes } from "../context/RecipesContext"
 
 export default function LibraryPage() {
+    const { recipes, dispatch } = useRecipes()
+
     return (
         <main>
             <section className="hero">
-                <h2>Your recipe <span className="accent">library</span></h2>
-                <p>Recipes you save will live here. Tag them, filter by dietary needs or cook time, and pull them up anytime.</p>
+                <h2>
+                    Your recipe <span className="accent">library</span>
+                </h2>
+                <p>
+                    {recipes.length} saved recipe{recipes.length === 1 ? "" : "s"}.
+                    Click any card to view, edit tags, or delete.
+                </p>
             </section>
 
-            <div className="empty-state">
-                <div className="icon" aria-hidden="true">📚</div>
-                <h3>Library coming Day 3</h3>
-                <p>Once we wire up saving, this page fills with your recipe cards.</p>
-            </div>
+            {recipes.length === 0 ? (
+                <div className="empty-state">
+                    <div className="icon" aria-hidden="true">📚</div>
+                    <h3>No saved recipes yet</h3>
+                    <p>Generate one on the home page and click "Save to library."</p>
+                </div>
+            ) : (
+                <div className="recipe-grid">
+                    {recipes.map(r => (
+                        <RecipeCard
+                            key={r.id}
+                            recipe={r}
+                            onToggleFav={() =>
+                                dispatch({ type: "TOGGLE_FAVORITE", payload: r.id })
+                            }
+                        />
+                    ))}
+                </div>
+            )}
         </main>
     )
 }
