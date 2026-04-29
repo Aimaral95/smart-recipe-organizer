@@ -37,6 +37,44 @@ html, body {
     min-height: 100%;
 }
 
+/* Global keyboard-focus indicator. Browsers vary; this gives every
+   focusable element a visible ring without showing one on mouse clicks. */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* main is programmatically focused on route change; we don't want a ring
+   around the whole page in that case. */
+main:focus-visible { outline: none; }
+
+/* Reusable utility — anything tagged .no-print will be hidden when printing. */
+.no-print {}
+
+/* Skip-to-content link — visually hidden until it receives focus. */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    z-index: 1000;
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--bg);
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-md);
+    transition: top 0.15s;
+}
+
+.skip-link:focus {
+    top: 16px;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 body {
     font-family: Inter, system-ui, -apple-system, sans-serif;
     color: var(--ink);
@@ -312,6 +350,16 @@ main {
 .chip-remove:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.ingredients-hint {
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 12px 16px;
+    background: var(--soft);
+    border-radius: var(--radius);
 }
 
 /* ============================================================
@@ -709,4 +757,1073 @@ main h2 {
     .add-ingredient-form button { width: 100%; }
     .get-recipe-container { flex-direction: column; align-items: stretch; text-align: center; }
     .get-recipe-container button { width: 100%; }
+}
+
+/* ============================================================
+   Day 4 batch 1 — detail page editors
+   ------------------------------------------------------------
+   ImageUploader, CookTimeEditor, DietarySelector, TagEditor,
+   plus the shared .details-panel container that wraps them.
+============================================================ */
+
+/* --- ImageUploader ----------------------------------------- */
+
+.image-uploader {
+    margin: 0 0 24px;
+}
+
+/* Empty-state drop zone (label wrapping the file input). */
+.image-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 20px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.image-drop:hover {
+    border-color: var(--accent);
+    background: #FFF8F4;
+    color: var(--slate);
+}
+
+.image-drop input[type="file"] {
+    /* visually hide but keep accessible — the label catches the click */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.image-drop-icon {
+    font-size: 1.6rem;
+    opacity: 0.7;
+}
+
+/* Filled-state preview (img + remove button). */
+.image-preview {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.image-preview img {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    object-fit: cover;
+}
+
+.image-preview .ghost-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+}
+
+.image-error {
+    margin: 8px 0 0;
+    color: #B91C1C;
+    font-size: 0.85rem;
+}
+
+/* --- Details panel (wraps the three metadata rows) --------- */
+
+.details-panel {
+    margin-top: 28px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.details-panel h3 {
+    margin: 0 0 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+}
+
+.details-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: start;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+}
+
+.details-row:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.details-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 6px;          /* visually align with first chip / input */
+}
+
+/* --- CookTimeEditor ---------------------------------------- */
+
+.cook-time-editor {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cook-time-editor input {
+    width: 90px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.cook-time-editor input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(209, 117, 87, 0.18);
+}
+
+.cook-time-editor .suffix {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* --- DietarySelector --------------------------------------- */
+
+.dietary-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.diet-chip {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--slate);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.diet-chip:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.diet-chip.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.diet-chip.selected:hover {
+    background: var(--accent-dk);
+    border-color: var(--accent-dk);
+    color: white;
+}
+
+.diet-chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- TagEditor --------------------------------------------- */
+
+.tag-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tag-chip-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 28px;          /* keeps the layout stable when 0 tags */
+}
+
+.tag-chip-list:empty::before {
+    content: "No tags yet";
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--soft);
+    color: var(--slate);
+    padding: 4px 6px 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
+}
+
+.tag-chip:hover {
+    border-color: var(--accent);
+}
+
+/* .chip-remove is shared with the ingredients list, so the × button
+   on a tag chip already inherits hover/focus styling from above. */
+
+.tag-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.tag-input-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.tag-input-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(209, 117, 87, 0.18);
+}
+
+.tag-input-row input::placeholder {
+    color: var(--muted);
+}
+
+/* --- Mobile tweaks for the details panel ------------------- */
+
+@media (max-width: 640px) {
+    .details-row {
+        grid-template-columns: 1fr;     /* stack label above value */
+        gap: 8px;
+    }
+    .details-label {
+        padding-top: 0;
+    }
+    .image-preview img {
+        max-height: 240px;
+    }
+}
+
+/* ============================================================
+   Day 4 batch 2 — FilterBar, view toggle, table view
+============================================================ */
+
+/* --- Library page toolbar (above the FilterBar) ------------ */
+
+.library-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.library-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.library-action-msg {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-left: 4px;
+}
+
+.library-action-msg.is-ok {
+    background: #ECFDF5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+}
+
+.library-action-msg.is-err {
+    background: #FEF2F2;
+    color: #7F1D1D;
+    border: 1px solid #FECACA;
+}
+
+.empty-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+/* ============================================================
+   Day 5 — Keyboard shortcut help overlay
+============================================================ */
+
+.shortcut-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 19, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    animation: shortcut-fade 0.15s ease-out;
+}
+
+@keyframes shortcut-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.shortcut-panel {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+}
+
+.shortcut-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.shortcut-panel-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.shortcut-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.shortcut-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+}
+
+.shortcut-row:first-child {
+    border-top: none;
+}
+
+.shortcut-keys {
+    display: inline-flex;
+    gap: 4px;
+}
+
+kbd {
+    display: inline-block;
+    min-width: 26px;
+    text-align: center;
+    padding: 3px 8px;
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8rem;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+}
+
+.shortcut-label {
+    color: var(--slate);
+    font-size: 0.9rem;
+}
+
+.shortcut-tip {
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.view-toggle-btn {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--slate);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.view-toggle-btn + .view-toggle-btn {
+    border-left: 1px solid var(--border);
+}
+
+.view-toggle-btn:hover {
+    background: var(--soft);
+    color: var(--ink);
+}
+
+.view-toggle-btn.is-active {
+    background: var(--ink);
+    color: var(--bg);
+}
+
+/* --- FilterBar --------------------------------------------- */
+
+.filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 18px 20px;
+    margin-bottom: 24px;
+}
+
+.filter-bar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.filter-bar-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.filter-result-count {
+    color: var(--muted);
+    font-size: 0.85rem;
+    flex: 1;
+}
+
+.filter-clear {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 14px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.filter-field-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.filter-field input[type="search"],
+.filter-field input[type="number"] {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    min-width: 0;
+    width: 100%;
+}
+
+.filter-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(209, 117, 87, 0.18);
+}
+
+.filter-field-time .filter-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-field-time input {
+    width: 90px;
+}
+
+.filter-field-time .suffix {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.filter-field-fav {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;       /* visually align baseline with sibling inputs */
+    cursor: pointer;
+    user-select: none;
+    color: var(--slate);
+    font-size: 0.9rem;
+}
+
+.filter-field-fav input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* --- FilterBar chip groups (dietary + tags) ---------------- */
+
+.filter-section {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+}
+
+.filter-section-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+
+.filter-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Reuse .diet-chip styling from batch 1 — already terracotta when selected. */
+
+.tag-filter-chip {
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--soft);
+    color: var(--slate);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.tag-filter-chip:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.tag-filter-chip.selected {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+}
+
+.tag-filter-chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- Inline link-button (used in empty-results message) ---- */
+
+.link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.link-btn:hover { color: var(--accent-dk); }
+
+/* --- Recipe table view ------------------------------------- */
+
+.recipe-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;            /* let the table scroll on narrow screens */
+}
+
+.recipe-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.recipe-table thead th {
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.recipe-table .th-fav { width: 44px; }
+.recipe-table .th-time { width: 130px; }
+.recipe-table .th-diet { width: 200px; }
+
+.th-sort-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.th-sort-btn:hover { color: var(--ink); }
+
+.th-sort-indicator {
+    color: var(--accent);
+    font-weight: 700;
+    min-width: 14px;
+}
+
+.recipe-table tbody tr.recipe-row {
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+}
+
+.recipe-table tbody tr.recipe-row:last-child {
+    border-bottom: none;
+}
+
+.recipe-table tbody tr.recipe-row:hover {
+    background: #FFF8F4;
+}
+
+.recipe-table tbody tr.recipe-row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.recipe-table td {
+    padding: 12px 14px;
+    color: var(--slate);
+    vertical-align: middle;
+}
+
+.recipe-table .td-title {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.recipe-table .td-fav { padding-right: 0; }
+
+.row-favorite {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.row-favorite:hover { background: var(--soft); color: var(--accent); }
+.row-favorite.is-fav { color: var(--accent); }
+
+.row-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.recipe-table .muted {
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* --- Mobile tweaks for FilterBar + table ------------------- */
+
+@media (max-width: 640px) {
+    .filter-row {
+        grid-template-columns: 1fr;     /* stack on phones */
+        gap: 12px;
+    }
+    .filter-field-fav { padding-bottom: 0; }
+    .filter-bar-header { gap: 8px; }
+    .filter-result-count { flex-basis: 100%; order: 3; }
+
+    .recipe-table-wrap { font-size: 0.85rem; }
+    .recipe-table .th-diet { display: none; }
+    .recipe-table .td-diet { display: none; }
+}
+
+/* ============================================================
+   Day 8 — Import page (paste-caption flow)
+   ------------------------------------------------------------
+   Two phases share the page:
+     1. .import-panel  — textarea + meta row + collapsible help.
+     2. .import-preview — extracted markdown rendered for review,
+        with the .save-recipe-bar reused below it.
+============================================================ */
+
+.import-panel {
+    background: white;
+    border: 1px solid var(--soft);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.import-label {
+    display: block;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+.import-textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 14px 16px;
+    border: 1px solid var(--soft);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+    resize: vertical;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.import-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(209, 117, 87, 0.18);
+}
+
+.import-textarea::placeholder {
+    color: var(--muted);
+    white-space: pre-wrap;
+}
+
+.import-textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.import-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.char-count {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.char-count.is-low {
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.import-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.import-tip {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--soft);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    color: var(--ink);
+}
+
+.import-tip summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent);
+    user-select: none;
+}
+
+.import-tip summary:hover {
+    text-decoration: underline;
+}
+
+.import-tip[open] summary {
+    margin-bottom: 10px;
+}
+
+.import-tip ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.import-tip li {
+    margin: 4px 0;
+}
+
+.import-tip strong {
+    color: var(--ink);
+}
+
+.import-preview {
+    margin-bottom: 16px;
+}
+
+.preview-banner {
+    background: rgba(209, 117, 87, 0.08);
+    border: 1px solid rgba(209, 117, 87, 0.25);
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+}
+
+.preview-banner strong {
+    color: var(--accent);
+}
+
+@media (max-width: 600px) {
+    .import-panel { padding: 16px; }
+    .import-textarea { min-height: 180px; font-size: 0.9rem; }
+    .import-meta { align-items: stretch; }
+    .import-actions { width: 100%; justify-content: flex-end; }
+}
+
+/* ============================================================
+   Day 8 — "Find a photo" button on recipe detail
+   ------------------------------------------------------------
+   Sits between the ImageUploader and the markdown article. Only
+   rendered when VITE_UNSPLASH_ACCESS_KEY is configured, so the
+   default look (no key) is the original "uploader only" UI.
+============================================================ */
+
+.photo-finder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: -8px 0 16px;
+    padding: 0 4px;
+}
+
+.photo-finder .ghost-btn {
+    font-size: 0.9rem;
+    padding: 8px 14px;
+}
+
+.photo-finder-hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* ============================================================
+   Day 8 — Print stylesheet (Save as PDF via browser dialog)
+   ------------------------------------------------------------
+   Goal: when the user prints a recipe detail page, hide all the chrome
+   (nav, toolbar, edit affordances) and render a clean recipe sheet —
+   image at top, title, ingredients, instructions, and a metadata footer.
+   Browsers expose "Save as PDF" inside the print dialog, so we get PDF
+   export for free.
+============================================================ */
+
+@media print {
+    /* Reset background + remove shadows globally — printers don't like
+       gradients or dropshadows, and they waste ink. */
+    body {
+        background: white !important;
+        background-image: none !important;
+        color: black;
+    }
+    main {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    /* Hide app chrome we never want on paper. */
+    header,
+    .skip-link,
+    .shortcut-overlay,
+    .no-print {
+        display: none !important;
+    }
+
+    /* The detail page hero image: keep it, but cap height so it doesn't
+       eat a whole page. */
+    .image-preview {
+        border: none;
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+    .image-preview img {
+        max-height: 280px;
+        width: 100%;
+        object-fit: cover;
+    }
+    /* If there's no image, hide the empty drop-zone entirely. */
+    .image-drop { display: none !important; }
+    /* Inside an image preview, hide the "Remove image" button. */
+    .image-preview .ghost-btn { display: none !important; }
+
+    /* Recipe markdown — flatten panel styling. */
+    .suggested-recipe-container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 16px 0;
+        color: black;
+    }
+    .suggested-recipe-container h2 {
+        border-bottom: 1px solid #999;
+        padding-bottom: 8px;
+        page-break-after: avoid;
+    }
+    .suggested-recipe-container ul,
+    .suggested-recipe-container ol {
+        page-break-inside: avoid;
+    }
+
+    /* Details panel: flatten so it reads as a footer block. */
+    .details-panel {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        background: white;
+        margin-top: 24px;
+        page-break-inside: avoid;
+    }
+    .details-row {
+        border-color: #ddd;
+    }
+    /* Hide editing UI inside the details panel — we just want the values. */
+    .tag-input-row,
+    .chip-remove {
+        display: none !important;
+    }
+    /* Disabled-looking inputs: render their value as text, no border/shadow. */
+    .cook-time-editor input {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        font-size: 1rem;
+        background: transparent;
+    }
+    /* In the dietary chip group, only print the selected ones. Unselected
+       chips would be visual noise on paper. */
+    .diet-chip {
+        background: white;
+        color: black;
+        border: 1px solid #999;
+    }
+    .diet-chip:not(.selected) { display: none; }
+
+    /* Tag chips: keep all (they're all "selected" by definition). */
+    .tag-chip {
+        background: white;
+        border: 1px solid #999;
+        color: black;
+    }
+
+    /* Page setup. */
+    @page {
+        margin: 0.6in;
+    }
 }

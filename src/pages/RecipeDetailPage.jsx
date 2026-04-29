@@ -1,27 +1,33 @@
 // RecipeDetailPage
 // The "/recipe/:id" route. Reads :id from the URL, looks up the recipe in
-// RecipesContext, and renders it. Includes a Delete button that dispatches
-// DELETE then redirects back to the library.
+// RecipesContext, renders the markdown, and exposes editable metadata
+// (image, cook time, dietary, tags) below.
 //
-// Day 4 will add: TagEditor, dietary multi-select, cook time editor, image upload.
-// Day 5 will add: keyboard shortcut for delete.
+// All editors are controlled — each one calls a dispatch on change so the
+// recipe persists immediately. There's no separate "Save" button: every
+// keystroke / chip click is committed via context → reducer → localStorage.
 
+import { useState } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import ReactMarkdown from "react-markdown"
 import { useRecipes } from "../context/RecipesContext"
+import TagEditor from "../components/TagEditor"
+import DietarySelector from "../components/DietarySelector"
+import CookTimeEditor from "../components/CookTimeEditor"
+import ImageUploader from "../components/ImageUploader"
+import { fetchUnsplashPhotoForRecipe, isUnsplashConfigured } from "../utils/unsplash"
 
 export default function RecipeDetailPage() {
     const { id } = useParams()
     const navigate = useNavigate()
     const { recipes, dispatch } = useRecipes()
+    const [photoStatus, setPhotoStatus] = useState("")  // "" | "loading" | "none"
 
-    // Pull the matching recipe out of the array. find() returns undefined
-    // if no match, which we handle with a friendly 404 view.
     const recipe = recipes.find(r => r.id === id)
 
     if (!recipe) {
         return (
-            <main>
+            <main id="main" tabIndex={-1}>
                 <section className="hero">
                     <h2>Recipe not found</h2>
                     <p>That recipe might have been deleted, or the link is wrong.</p>
@@ -46,9 +52,41 @@ export default function RecipeDetailPage() {
         dispatch({ type: "TOGGLE_FAVORITE", payload: id })
     }
 
+    function setTags(tags) {
+        dispatch({ type: "UPDATE_TAGS", payload: { id, tags } })
+    }
+
+    function setDietary(dietary) {
+        dispatch({ type: "UPDATE_DIET", payload: { id, dietary } })
+    }
+
+    function setCookTime(cookTimeMinutes) {
+        dispatch({ type: "UPDATE_TIME", payload: { id, cookTimeMinutes } })
+    }
+
+    function setImage(image) {
+        dispatch({ type: "UPDATE_IMAGE", payload: { id, image } })
+    }
+
+    // "Find a photo" button — fetches from Unsplash using the recipe's title
+    // as the search query. Shows a quick "looking..." state, then either
+    // updates the image or surfaces a "no photo found" hint for ~3s.
+    async function findPhotoOnUnsplash() {
+        if (!recipe) return
+        setPhotoStatus("loading")
+        const { url } = await fetchUnsplashPhotoForRecipe(recipe.title)
+        if (url) {
+            dispatch({ type: "UPDATE_IMAGE", payload: { id, image: url } })
+            setPhotoStatus("")
+        } else {
+            setPhotoStatus("none")
+            setTimeout(() => setPhotoStatus(""), 3000)
+        }
+    }
+
     return (
-        <main className="recipe-detail">
-            <div className="detail-toolbar">
+        <main id="main" tabIndex={-1} className="recipe-detail">
+            <div className="detail-toolbar no-print">
                 <Link to="/library" className="ghost-btn">← Library</Link>
                 <div className="toolbar-actions">
                     <button
@@ -61,6 +99,14 @@ export default function RecipeDetailPage() {
                     </button>
                     <button
                         type="button"
+                        className="ghost-btn"
+                        onClick={() => window.print()}
+                        title="Open the print dialog — choose 'Save as PDF' there"
+                    >
+                        ⎙ Print / PDF
+                    </button>
+                    <button
+                        type="button"
                         className="danger-btn"
                         onClick={handleDelete}
                     >
@@ -69,25 +115,66 @@ export default function RecipeDetailPage() {
                 </div>
             </div>
 
+            {/* Image lives above the markdown so it acts like a hero photo. */}
+            <ImageUploader value={recipe.image || ""} onChange={setImage} />
+
+            {/* "Find a photo" — best-effort Unsplash search using the recipe
+                title. Hidden when the access key isn't configured so we don't
+                show a button that does nothing. */}
+            {isUnsplashConfigured() && (
+                <div className="photo-finder no-print">
+                    <button
+                        type="button"
+                        className="ghost-btn"
+                        onClick={findPhotoOnUnsplash}
+                        disabled={photoStatus === "loading"}
+                    >
+                        {photoStatus === "loading"
+                            ? "Looking on Unsplash..."
+                            : recipe.image
+                                ? "Try a different photo"
+                                : "Find a photo on Unsplash"}
+                    </button>
+                    {photoStatus === "none" && (
+                        <span className="photo-finder-hint">
+                            No matching photo — try editing the title or upload one yourself.
+                        </span>
+                    )}
+                </div>
+            )}
+
             <article className="suggested-recipe-container">
                 <ReactMarkdown>{recipe.markdown}</ReactMarkdown>
             </article>
 
-            <aside className="detail-meta">
-                {typeof recipe.cookTimeMinutes === "number" && (
-                    <span className="meta-pill">⏱ {recipe.cookTimeMinutes} min</span>
-                )}
-                {recipe.dietary?.length > 0 && (
-                    <span className="meta-pill">🥗 {recipe.dietary.join(", ")}</span>
-                )}
-                {recipe.tags?.length > 0 && (
-                    <div className="card-tags">
-                        {recipe.tags.map(tag => (
-                            <span key={tag} className="card-tag">{tag}</span>
-                        ))}
-                    </div>
-                )}
-            </aside>
+            {/* Editable metadata. Each control dispatches on change. */}
+            <section className="details-panel" aria-label="Recipe details">
+                <h3>Details</h3>
+
+                <div className="details-row">
+                    <label className="details-label" htmlFor="cooktime">Cook time</label>
+                    <CookTimeEditor
+                        value={recipe.cookTimeMinutes}
+                        onChange={setCookTime}
+                    />
+                </div>
+
+                <div className="details-row">
+                    <span className="details-label">Dietary</span>
+                    <DietarySelector
+                        value={recipe.dietary || []}
+                        onChange={setDietary}
+                    />
+                </div>
+
+                <div className="details-row">
+                    <span className="details-label">Tags</span>
+                    <TagEditor
+                        tags={recipe.tags || []}
+                        onChange={setTags}
+                    />
+                </div>
+            </section>
         </main>
     )
 }

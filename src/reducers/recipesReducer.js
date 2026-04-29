@@ -13,7 +13,8 @@
 //   UPDATE_TIME      payload: { id, cookTimeMinutes: number }  replace cook time
 //   UPDATE_IMAGE     payload: { id, image: string }            replace image (Day 4)
 //   TOGGLE_FAVORITE  payload: string (id)                      flip favorite bool
-//   IMPORT           payload: Recipe[]                         replace whole library
+//   IMPORT           payload: Recipe[]                         merge by id (local wins on conflict)
+//   REPLACE_ALL      payload: Recipe[]                         replace whole library (destructive)
 //
 // Recipe shape:
 //   { id, title, ingredients, instructions, markdown,
@@ -64,7 +65,17 @@ export function recipesReducer(state, action) {
                     : r
             )
 
-        case "IMPORT":
+        case "IMPORT": {
+            // Merge incoming recipes into the library, keyed by id.
+            // Local recipes win on conflict, so importing your own export
+            // back doesn't overwrite edits you made since.
+            if (!Array.isArray(action.payload)) return state
+            const localIds = new Set(state.map(r => r.id))
+            const fresh = action.payload.filter(r => r && r.id && !localIds.has(r.id))
+            return [...state, ...fresh]
+        }
+
+        case "REPLACE_ALL":
             return Array.isArray(action.payload) ? action.payload : state
 
         default:

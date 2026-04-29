@@ -15,6 +15,7 @@ export default function Header() {
             </NavLink>
             <nav className="main-nav" aria-label="Primary">
                 <NavLink to="/" end>Generator</NavLink>
+                <NavLink to="/import">Import</NavLink>
                 <NavLink to="/library">Library</NavLink>
             </nav>
         </header>

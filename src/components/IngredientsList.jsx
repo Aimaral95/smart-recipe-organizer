@@ -29,7 +29,7 @@ export default function IngredientsList({ ingredients, onRemove, getRecipe, disa
                 ))}
             </ul>
 
-            {ingredients.length > 3 && (
+            {ingredients.length > 3 ? (
                 <div className="get-recipe-container">
                     <div>
                         <h3>Ready for a recipe?</h3>
@@ -39,6 +39,12 @@ export default function IngredientsList({ ingredients, onRemove, getRecipe, disa
                         {disabled ? "Generating..." : "Get a recipe"}
                     </button>
                 </div>
+            ) : (
+                <p className="ingredients-hint" aria-live="polite">
+                    Add {4 - ingredients.length} more
+                    {ingredients.length === 3 ? " ingredient" : " ingredients"} to
+                    generate a recipe.
+                </p>
             )}
         </section>
     )

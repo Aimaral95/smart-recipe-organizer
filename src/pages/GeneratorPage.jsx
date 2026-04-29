@@ -21,6 +21,7 @@ import ErrorBanner from "../components/ErrorBanner"
 import { getRecipeFromChefClaude } from "../ai"
 import { useRecipes } from "../context/RecipesContext"
 import { parseRecipe } from "../utils/parseRecipe"
+import { fetchUnsplashPhotoForRecipe } from "../utils/unsplash"
 
 export default function GeneratorPage() {
     const [ingredients, setIngredients] = useState([])
@@ -84,12 +85,24 @@ export default function GeneratorPage() {
         }
         dispatch({ type: "ADD", payload: newRecipe })
         setSavedId(newRecipe.id)
+
+        // Fire-and-forget Unsplash photo lookup. We deliberately do NOT
+        // await this — saving is instant whether or not the photo arrives.
+        // If the call succeeds we patch in the URL with UPDATE_IMAGE. If
+        // the user has no access key, or the API fails, the recipe just
+        // stays imageless and they can upload one manually.
+        fetchUnsplashPhotoForRecipe(newRecipe.title).then(({ url }) => {
+            if (url) {
+                dispatch({ type: "UPDATE_IMAGE", payload: { id: newRecipe.id, image: url } })
+            }
+        })
+
         // Hand off to the detail page so the user sees what they saved.
         navigate(`/recipe/${newRecipe.id}`)
     }
 
     return (
-        <main>
+        <main id="main" tabIndex={-1}>
             <section className="hero">
                 <h2>
                     Cook with what's <span className="accent">already in your kitchen</span>
