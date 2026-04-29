@@ -4,9 +4,7 @@
 
 A single-page web app that lets users generate recipes from ingredients on hand, import recipes from social-media captions, and organize a personal library — all backed by a serverless function that proxies the Claude API and keeps secrets off the client.
 
-**Live demo:** _Add your Vercel URL here once deployed._
-
-**Repo:** _Add your GitHub URL here._
+**Live demo:** https://smart-recipe-organizer.vercel.app
 
 **Author:** Aimaral Khaumyetbyek — solo project. Designed, built, and documented end-to-end (frontend, serverless backend, deployment, demo materials).
 
