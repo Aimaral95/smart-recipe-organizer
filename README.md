@@ -232,19 +232,6 @@ In dev, the Anthropic SDK is called directly from the browser. The key sits in `
 
 ---
 
-## Deploying to Vercel
-
-See **[DEPLOY.md](./DEPLOY.md)** for the full step-by-step. Short version:
-
-1. Push to GitHub.
-2. Import the repo on <https://vercel.com> — it auto-detects Vite.
-3. Add `ANTHROPIC_API_KEY` (and optionally `VITE_UNSPLASH_ACCESS_KEY`) under Environment Variables.
-4. Click **Deploy**.
-
-The `vercel.json` in this repo handles SPA fallback so deep links like `/library` and `/recipe/<id>` survive a refresh.
-
----
-
 ## Architecture decisions
 
 **Why move the AI call server-side?**
@@ -288,7 +275,7 @@ Manual smoke tests, run after deploy:
 
 The hardest backend decision was the error-mapping layer. The first cut just re-threw whatever Anthropic gave back; that meant a misconfigured env var on Vercel produced the same opaque "fetch failed" in the browser as a temporary upstream outage. Splitting them out into `400 / 422 / 500 / 502` with a consistent JSON shape made the front-end's error UI suddenly easy — the error message in the dismissible banner is now the literal string the server produced.
 
-The `dangerouslyAllowBrowser: true` flag in the Anthropic SDK is a red flag I missed in the original tutorial I started from. It's quietly fine for a local-only proof-of-concept, but a one-line slip for anything that ships. Moving the call server-side wasn't hard, but it changed the shape of every error path the frontend has to handle. It was worth doing on day 1; I did it on day 7.
+The `dangerouslyAllowBrowser: true` flag in the Anthropic SDK is a red flag I missed in the original tutorial I started from. It's quietly fine for a local-only proof-of-concept, but a one-line slip for anything that ships. Moving the call server-side wasn't hard, but it changed the shape of every error path the frontend has to handle.
 
 The `useReducer` shape is a quiet underrated benefit. Every library mutation goes through one pure function, which means swapping localStorage for a real backend later is a contained change — replace each `case` body with a `fetch` call, keep the rest of the app intact. The reducer is the abstraction line.
 
@@ -318,25 +305,3 @@ Solo project — every line of code, the architecture decisions, the API contrac
 | Member | Role | Contribution |
 | ------ | ---- | ------------ |
 | **Aimaral Khaumyetbyek** | Sole contributor | Frontend (React 19 SPA, routing, state, components, styling, accessibility), backend (Vercel serverless function, validation, error mapping), deployment (Vercel + env vars), documentation, demo script. |
-
----
-
-## Submission package
-
-Three files are submitted alongside this repo, per the project deliverables rubric:
-
-1. `Smart_Recipe_Organizer_Source.zip` — the full source tree (excludes `node_modules`, `dist`, and `.env.local`).
-2. `Smart_Recipe_Organizer_Demo.mp4` — the recorded demo video (see `DEMO_SCRIPT.md` for the script).
-3. `README.md` — this document.
-
-Optional/auxiliary files in the repo:
-- `Smart_Recipe_Organizer_Presentation.pptx` — final-presentation slide deck (12 slides).
-- `DEPLOY.md` — step-by-step Vercel deployment walkthrough.
-- `DEMO_SCRIPT.md` — the 5-minute demo script used for the recorded walkthrough.
-- `SUBMISSION.md` — the day-of submission checklist.
-
----
-
-## License
-
-MIT — feel free to fork and ship your own version.
