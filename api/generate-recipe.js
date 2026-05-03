@@ -1,39 +1,39 @@
 // Vercel serverless function — POST /api/generate-recipe
-// Runs server-side on Vercel's edge/Node runtime. Receives a request from
-// the browser and asks Anthropic for a recipe in markdown. The Anthropic
-// API key never leaves the server.
-//
-// Two modes, picked by the `mode` field in the request body:
-//
-//   1. mode: "generate"  (default — back-compat for the original generator)
-//      Body: { ingredients: string[] }
-//      Returns: a brand-new recipe based on those ingredients.
-//
-//   2. mode: "extract"
-//      Body: { caption: string }
-//      Returns: a clean, structured markdown recipe parsed out of arbitrary
-//      caption text the user pasted from Instagram, TikTok, Facebook, a blog,
-//      a screenshot OCR, etc. Strips hashtags, emoji clutter, and the usual
-//      "follow me for more!" filler.
-//
-// Why move this server-side?
-//   In dev, src/ai.js called the Anthropic SDK directly from the browser
-//   with `dangerouslyAllowBrowser: true`. That works locally but ships the
-//   API key inside the production JS bundle — anyone visiting the deployed
-//   site could open DevTools, copy the key, and burn through your quota.
-//
-//   Putting the call behind a serverless endpoint gives us:
-//     - Key secrecy: ANTHROPIC_API_KEY is a server-only env var on Vercel.
-//     - A choke point: we can rate-limit, log, or swap models server-side
-//       without redeploying the frontend.
-//     - Cleaner client: the browser just does a fetch, no SDK in the bundle.
-//
-// Deployment:
-//   This file is auto-detected by Vercel because it lives under /api/.
-//   The deployed URL becomes https://<your-app>.vercel.app/api/generate-recipe.
-//   Locally, run `vercel dev` (npm install -g vercel) to mount it at
-//   http://localhost:3000/api/generate-recipe — or stick with `npm run dev`
-//   and the existing browser SDK fallback in src/ai.js.
+// This file runs on the server, not in the browser.
+// It receives the user's request, sends it to Anthropic,
+// and returns the recipe as markdown.
+
+// The API key stays safe on the server.
+// The browser never sees it.
+
+// There are two modes:
+
+// 1. "generate"
+// The user gives ingredients.
+// The app creates a new recipe.
+
+// Example body:
+// { ingredients: ["chicken", "rice", "tomato"] }
+
+// 2. "extract"
+// The user pastes a recipe caption from Instagram, TikTok,
+// Facebook, a blog, or screenshot text.
+// The app cleans it and turns it into a structured recipe.
+
+// Example body:
+// { caption: "..." }
+
+// Why this is server-side:
+// At first, the app called Anthropic directly from the browser.
+// That worked for testing, but it was unsafe for production
+// because the API key could be exposed in the website code.
+
+// Now the frontend only sends a normal fetch request.
+// Vercel keeps ANTHROPIC_API_KEY private on the server.
+
+// This also makes the app easier to improve later.
+// For example, I can add rate limiting, logging,
+// or change the AI model without changing the frontend.
 
 import Anthropic from "@anthropic-ai/sdk"
 
@@ -81,19 +81,20 @@ Rules:
 `.trim()
 
 export default async function handler(req, res) {
-    // Only POST is allowed; GET to this endpoint should fail loudly.
+    // Only POST requests are allowed here.
+    // If someone tries to use GET, the request will fail.
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST")
         return res.status(405).json({ error: "Method not allowed" })
     }
 
-    // Default mode is "generate" so legacy callers (the original front-end
-    // before paste-caption was added) keep working unchanged.
+    // Default is "generate" so the old frontend still works
+    // without any changes.
     const body = req.body || {}
     const mode = body.mode || "generate"
 
-    // Validate per-mode inputs early — way nicer error message than letting
-    // Anthropic 400 us five seconds later.
+    // Check inputs early so we can give a clear error,
+    // instead of waiting for the AI to fail later.
     let userMessage
     if (mode === "generate") {
         const { ingredients } = body
@@ -113,8 +114,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: `Unknown mode: ${mode}` })
     }
 
-    // Fail fast if the env var is missing — way more useful than a cryptic
-    // 401 from Anthropic five seconds later.
+    // Check if the API key exists first.
+    // It's better to fail early with a clear message
+    // than get a confusing error later.
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
         console.error("ANTHROPIC_API_KEY is not set in this environment")
@@ -133,8 +135,9 @@ export default async function handler(req, res) {
 
         const text = (msg.content[0]?.text || "").trim()
 
-        // Surface the "not a recipe" sentinel as a clear 422 so the front-end
-        // can show a friendly message instead of saving garbage.
+        // If the result isn’t actually a recipe,
+        // return a clear 422 error so the frontend
+        // can show a nice message instead of saving bad data.
         if (mode === "extract" && text === "NOT_A_RECIPE") {
             return res.status(422).json({ error: "I couldn't find a recipe in that text. Try pasting just the caption with the steps." })
         }
