@@ -12,15 +12,19 @@ A single-page web app that lets users generate recipes from ingredients on hand,
 
 ## Why this project
 
-The frontend is a React 19 SPA, but the interesting work for a backend course lives in `api/generate-recipe.js`. That file is a Vercel serverless function that:
+The frontend is built with React, but the main backend work is in api/generate-recipe.js.
 
-- Accepts two distinct request shapes through a single endpoint (a `mode` switch).
-- Validates every field before talking to Anthropic — bad inputs fail fast with a useful 4xx, never a cryptic 500 from upstream.
-- Holds the Anthropic API key as a server-only environment variable, so it never ships in the browser bundle and can't be stolen via DevTools.
-- Translates upstream errors into well-formed HTTP responses with appropriate status codes (`405`, `400`, `422`, `500`, `502`) and a consistent JSON error shape.
-- Acts as a choke point — rate limiting, logging, prompt swapping, or model upgrades can happen here without redeploying the frontend.
+This file is a serverless function on Vercel that handles all recipe generation.
 
-The frontend is the consumer of that API, but it stays useful in dev without it: a fallback path in `src/ai.js` calls Anthropic directly using a gitignored local key, so `npm run dev` works without spinning up the function runner.
+- It uses one endpoint but supports two modes using a simple mode switch.
+- It checks all inputs first, so users get clear errors instead of random failures later.
+- The API key is stored safely on the server, so it’s never exposed in the browser.
+- It returns clean, consistent error messages with proper status codes like 400, 422, or 500.
+- It acts as a central point where I can later add things like rate limiting, logging, or even change the AI model without touching the frontend.
+
+The frontend just calls this API.
+
+But during development, it can still work without the backend. There’s a fallback in src/ai.js that calls Anthropic directly using a local API key, so I can run the app with npm run dev without setting up the server.
 
 ---
 
